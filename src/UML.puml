@@ -1,0 +1,191 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+' Forzar un diseño más limpio y ortogonal
+skinparam linetype ortho
+
+' ========================================================
+' BLOQUE SUPERIOR: CONTROLADORES Y VISTAS (PRESENTACIÓN)
+' ========================================================
+together {
+    package "view" {
+        class VistaPrincipal {
+        +mostrarMenu(puntos: int)
+         }
+        class VistaMazo {
+         +mostrarColeccion(cartas: List<Carta>); +mostrarMazoActual(mazo: List<Carta>)
+         }
+        class VistaSobres {
+         +mostrarTienda(); +mostrarCartasObtenidas(cartas: List<Carta>)
+         }
+        class VistaPartida {
+        +mostrarTablero(t: Tablero); +mostrarMano(m: List<Carta>); +mostrarMensaje(m: String)
+         }
+    }
+
+    package "controller" {
+        class MenuPrincipalController {
+            -jugadorActual: Jugador
+            -vista: VistaPrincipal
+            +mostrarMenu()
+            +navegarAMazo()
+            +navegarASobres()
+            +navegarAPartida()
+        }
+        class MazoController {
+            -jugadorActual: Jugador
+            -inventarioDao: InventarioDAO
+            -vista: VistaMazo
+            +iniciar()
+            +seleccionarCartaParaMazo(carta: Carta)
+            +confirmarMazo()
+        }
+        class SobreController {
+            -jugadorActual: Jugador
+            -tiendaService: TiendaService
+            -vista: VistaSobres
+            +iniciar()
+            +solicitarCompraSobre(tipoSobre: String)
+        }
+        class PartidaController {
+            -jugador: Jugador
+            -rival: Jugador
+            -reglasService: ReglasJuegoService
+            -jugadorDao: JugadorDAO
+            -vista: VistaPartida
+            +iniciarPartida()
+            +colocarCarta(indexMano: int, fila: int, col: int)
+            -finalizarPartida()
+        }
+    }
+}
+
+' ========================================================
+' BLOQUE INTERMEDIO: SERVICIOS (LÓGICA DE NEGOCIO)
+' ========================================================
+package "service" {
+    class PokeApiService {
+        +obtenerIdsPorTipo(tipo: Tipo): List<Integer>
+        +obtenerIdsPorGeneracion(gen: int): List<Integer>
+        +obtenerIdsTerceraEvolucion(): List<Integer>
+        +cargarDatosPokemon(idApi: int): Pokemon
+    }
+    class CalculadoraCombateService {
+        -tablaTipos: double[][]
+        +enfrentarCartas(atacante: Carta, defensor: Carta, direccionAtaque: String): boolean
+        -obtenerMultiplicadorTipo(atacante: Tipo, defensor: Tipo): double
+    }
+    class ReglasJuegoService {
+        -calculadora: CalculadoraCombateService
+        +decidirPrimerTurno(): boolean
+        +ejecutarMovimiento(t: Tablero, f: int, c: int, carta: Carta, j: Jugador): boolean
+        -comprobarConquistasAdyacentes(t: Tablero, f: int, c: int)
+    }
+    class TiendaService {
+        -pokeApi: PokeApiService
+        -inventarioDao: InventarioDAO
+        -jugadorDao: JugadorDAO
+        +comprarSobre(j: Jugador, tipoSobre: String): List<Carta>
+        -generarRarezaAleatoria(): Rareza
+    }
+}
+
+' ========================================================
+' BLOQUE INFERIOR: MODELO (ENTIDADES Y PERSISTENCIA)
+' ========================================================
+together {
+    package "model.DAO" {
+        interface JugadorDAO {
+            +obtenerOCrearJugador(username: String): Jugador
+            +actualizarPuntosBatalla(idJugador: int, nuevosPuntos: int)
+        }
+        interface InventarioDAO {
+            +añadirCartaInventario(idJugador: int, idPokemonApi: int, rareza: Rareza)
+            +obtenerCartasPorJugador(idJugador: int): List<Carta>
+        }
+    }
+
+    package "model.entities" {
+        class Jugador {
+            -id: int
+            -nombre: String
+            -puntosBatalla: int
+            -coleccion: List<Carta>
+            -mazoSeleccionado: List<Carta>
+            +añadirPuntos(p: int)
+            +restarPuntos(p: int): boolean
+        }
+        class Tablero {
+            -casillas: Casilla[][]
+            +estaLleno(): boolean
+            +getCasilla(f: int, c: int): Casilla
+            +contarCasillasPorJugador(j: Jugador): int
+        }
+        class Casilla {
+            -carta: Carta
+            -propietario: Jugador
+            +estaVacia(): boolean
+            +setCarta(c: Carta, j: Jugador)
+        }
+        class Carta {
+            -idPokemonApi: int
+            -pokemonBase: Pokemon
+            -rareza: Rareza
+            +getAtkF(): int
+            +getDE(): int
+            +getAtkE(): int
+            +getDF(): int
+            +getTipo(): Tipo
+        }
+        class Pokemon {
+            -nombre: String
+            -atkF: int; -DE: int; -atkE: int; -DF: int
+            -tipo: Tipo
+        }
+        enum Rareza {
+         COMUN, RARO, EPICO, LEGENDARIO; -multiplicador: double
+         }
+        enum Tipo {
+        FUEGO, AGUA, PLANTA, ELECTRICO, DRAGON
+        }
+    }
+}
+
+' ========================================================
+' ALINEACIÓN Y ENRUTAMIENTO (Distribución Cuadrada)
+' ========================================================
+
+' Flujo horizontal de Controladores y Vistas
+MenuPrincipalController -right-> MazoController
+MazoController -right-> SobreController
+SobreController -right-> PartidaController
+
+VistaPrincipal -down-> MenuPrincipalController
+VistaMazo -down-> MazoController
+VistaSobres -down-> SobreController
+VistaPartida -down-> PartidaController
+
+' Enlaces de Controladores hacia Servicios (Hacia abajo)
+MazoController -down-> model.DAO.InventarioDAO
+SobreController -down-> TiendaService
+PartidaController -down-> ReglasJuegoService
+PartidaController -down-> model.DAO.JugadorDAO
+
+' Conexiones internas de Servicios
+TiendaService -right-> PokeApiService
+ReglasJuegoService -right-> CalculadoraCombateService
+
+' Servicios hacia DAOs y Entidades
+TiendaService -down-> model.DAO.InventarioDAO
+TiendaService -down-> model.DAO.JugadorDAO
+ReglasJuegoService -down-> Tablero
+
+' Estructura interna del Modelo (Fijada en cuadrícula)
+Tablero *-- "3x3" Casilla
+Casilla o-- Carta
+Carta --> Pokemon
+Carta --> Rareza
+Pokemon --> Tipo
+Jugador --> "0..*" Carta
+
+@enduml
