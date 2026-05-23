@@ -11,18 +11,40 @@ public class Carta {
         this.pokemon = pokemon;
         this.rareza = rareza;
         this.jugador = jugador;
+        aplicarMejoraPorRareza(this.pokemon, this.rareza);
     }
     public Carta(Pokemon pokemon,Rareza rareza) {
         this.pokemon = pokemon;
         this.rareza = rareza;
+        aplicarMejoraPorRareza(this.pokemon, this.rareza);
     }
 
     public Carta(int id, Pokemon pokemon, Rareza rareza) {
         this.id = id;
         this.pokemon = pokemon;
         this.rareza = rareza;
+        aplicarMejoraPorRareza(this.pokemon, this.rareza);
     }
 
+    //Metodo
+    private void aplicarMejoraPorRareza(Pokemon pokemon, Rareza rareza) {
+        double multiplicador = 1.0;
+
+        switch (rareza) {
+            case COMUN -> multiplicador = 1.0;
+            case RARO -> multiplicador = 1.50;      // +50%
+            case EPICO -> multiplicador = 1.70;     // +70%
+            case LEGENDARIO -> multiplicador = 2.50; // +150%
+        }
+
+        if (multiplicador > 1.0 && pokemon != null) {
+            // Mapeamos y multiplicamos cada estadística de forma matemática exacta
+            pokemon.setAtkF((int) (pokemon.getAtkF() * multiplicador));
+            pokemon.setdE((int) (pokemon.getdE() * multiplicador));   // Defensa Especial
+            pokemon.setAtkE((int) (pokemon.getAtkE() * multiplicador)); // Ataque Especial
+            pokemon.setdF((int) (pokemon.getdF() * multiplicador));   // Defensa Física
+        }
+    }
 
     //Getters and Setters
 

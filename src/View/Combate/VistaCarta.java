@@ -20,14 +20,27 @@ public class VistaCarta extends JPanel {
     // Mapa de colores vibrantes según el tipo de Pokémon
     private static final Map<String, Color> COLORES_TIPO = new HashMap<>();
     static {
-        COLORES_TIPO.put("FUEGO", new Color(185, 28, 28));
-        COLORES_TIPO.put("AGUA", new Color(29, 78, 216));
-        COLORES_TIPO.put("PLANTA", new Color(21, 128, 61));
-        COLORES_TIPO.put("ELECTRICO", new Color(202, 138, 4));
-        COLORES_TIPO.put("DRAGON", new Color(109, 40, 217));
-        COLORES_TIPO.put("FANTASMA", new Color(76, 29, 149));
-        COLORES_TIPO.put("PSIQUICO", new Color(219, 39, 119));
-        COLORES_TIPO.put("LUCHA", new Color(146, 64, 14));
+        // 🔥 Tus tipos originales (mantenidos y ajustados)
+        COLORES_TIPO.put("FUEGO", new Color(185, 28, 28));     // Rojo vibrante (Red 700)
+        COLORES_TIPO.put("AGUA", new Color(29, 78, 216));      // Azul océano (Blue 700)
+        COLORES_TIPO.put("PLANTA", new Color(21, 128, 61));     // Verde hoja (Green 700)
+        COLORES_TIPO.put("ELECTRICO", new Color(202, 138, 4));  // Amarillo/Ámbar oscuro (Yellow 600)
+        COLORES_TIPO.put("DRAGON", new Color(109, 40, 217));    // Violeta místico (Violet 700)
+        COLORES_TIPO.put("FANTASMA", new Color(76, 29, 149));   // Morado espectral (Purple 800)
+        COLORES_TIPO.put("PSIQUICO", new Color(219, 39, 119));  // Fuchsia/Rosa psíquico (Pink 600)
+        COLORES_TIPO.put("LUCHA", new Color(146, 64, 14));      // Marrón terracota (Amber 800)
+
+        // 🌟 NUEVOS TIPOS AÑADIDOS
+        COLORES_TIPO.put("NORMAL", new Color(100, 116, 139));   // Gris acero/plata (Slate 500)
+        COLORES_TIPO.put("HIELO", new Color(6, 182, 212));      // Turquesa/Cian helado (Cyan 500)
+        COLORES_TIPO.put("VENENO", new Color(134, 25, 143));    // Púrpura tóxico (Fuchsia 800)
+        COLORES_TIPO.put("TIERRA", new Color(120, 53, 4));      // Marrón oscuro tierra (Yellow 900)
+        COLORES_TIPO.put("VOLADOR", new Color(96, 165, 250));   // Azul cielo (Blue 400)
+        COLORES_TIPO.put("BICHO", new Color(101, 163, 13));     // Verde bicho/oliva (Lime 600)
+        COLORES_TIPO.put("ROCA", new Color(120, 113, 108));     // Gris piedra (Stone 500)
+        COLORES_TIPO.put("ACERO", new Color(71, 85, 105));      // Gris metalizado (Slate 600)
+        COLORES_TIPO.put("HADA", new Color(244, 114, 182));     // Rosa pastel brillante (Pink 400)
+        COLORES_TIPO.put("SINIESTRO", new Color(30, 41, 59));   // Negro/Azul noche (Slate 800)
     }
 
     public VistaCarta(String nombre, String tipo, String rareza, int up, int down, int left, int right, String jugador, String urlSprite) {

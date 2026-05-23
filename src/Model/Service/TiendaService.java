@@ -64,7 +64,6 @@ public class TiendaService {
            Pokemon pokemonBase = api.cargarDatosPokemon(id);
            //Generamos las cartas con sus rarezas
            Rareza rarezaPremiada = calcularRarezaPremiada(rarezasobre);
-           aplicarMejoraPorRareza(pokemonBase, rarezaPremiada);
            Carta nuevaCarta = new Carta(pokemonBase, rarezaPremiada);
            cartasObtenidas.add(nuevaCarta);
        }
@@ -77,21 +76,5 @@ public class TiendaService {
             System.err.println("❌ Error crítico al guardar el sobre en la BD: " + e.getMessage());
         }
        return cartasObtenidas;
-    }
-    private void aplicarMejoraPorRareza(Pokemon pokemon, Rareza rareza) {
-        double multiplicador = 1.0;
-
-        switch (rareza) {
-            case COMUN -> multiplicador = 1.0;       // Se queda con las stats base de la API
-            case RARO -> multiplicador = 1.15;       // +15% de estadísticas
-            case EPICO -> multiplicador = 1.30;      // +30% de estadísticas
-            case LEGENDARIO -> multiplicador = 1.50; // +50% de estadísticas
-        }
-        if (multiplicador > 1.0) {
-            pokemon.setAtkF((int) (pokemon.getAtkF() * multiplicador));
-            pokemon.setdE((int) (pokemon.getdE() * multiplicador));
-            pokemon.setAtkE((int) (pokemon.getAtkE() * multiplicador));
-            pokemon.setAtkE((int) (pokemon.getdE() * multiplicador));
-        }
     }
 }
