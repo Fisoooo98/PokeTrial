@@ -1,16 +1,12 @@
 package View.Combate;
 
-import Model.DAO.InventarioDAOImpl;
 import Model.DAO.JugadorDAOImpl;
-import Model.Entities.Carta;
 import Model.Service.PartidaService;
 
 import javax.swing.*;
-import java.util.List;
 
 public class Combate {
-    // Tus DAOs e instancias originales
-    InventarioDAOImpl inventarioDAO = new InventarioDAOImpl();
+
     JugadorDAOImpl jugadorDAO = new JugadorDAOImpl();
 
     public static void main(String[] args) {
@@ -20,47 +16,32 @@ public class Combate {
 
     public void iniciarPartida(int idJugador1, int idJugador2) {
         SwingUtilities.invokeLater(() -> {
-            // 1. Creamos la vista, el servicio lógico y el controlador
-            VentanaJuego ventana = new VentanaJuego();
 
-            // Creamos los objetos Jugador que pide tu PartidaService para setear el mazo actual
-            Model.Entities.Jugador j1 = jugadorDAO.obtenerJugadorPorId(idJugador1); // O new Jugador() seteando su ID
+            Model.Entities.Jugador j1 = jugadorDAO.obtenerJugadorPorId(idJugador1);
             Model.Entities.Jugador j2 = jugadorDAO.obtenerJugadorPorId(idJugador2);
 
-            // Instanciamos el servicio y lo inicializamos con tus jugadores reales de la BD
-            Model.Service.PartidaService partidaService = new PartidaService();
+            // 1. Inicializamos el service (carga mazos y tablero lógico)
+            PartidaService partidaService = new PartidaService();
             try {
-                // 🎲 ¡ESTO ES LO QUE FALTA! Así el service inicializa 'manoActual' y el tablero lógico
                 partidaService.iniciarPartida(j1, j2);
             } catch (Model.Exceptions.MazoException e) {
                 System.err.println("Error de mazos: " + e.getMessage());
+                return;
             }
 
-            // Le pasamos el servicio ya inicializado al controlador para que no dé NullPointer
+            // 2. Creamos controlador y ventana
             Controller.PartidaController controlador = new Controller.PartidaController(partidaService);
+            VentanaJuego ventana = new VentanaJuego(j1, j2);
             ventana.setControlador(controlador);
 
-            // 2. Tu carga visual con DAOs (Se mantiene idéntica)
-            List<Carta> mazoJ1 = inventarioDAO.obtenerMazo(idJugador1);
-            List<Carta> mazoJ2 = inventarioDAO.obtenerMazo(idJugador2);
-
-            for (Carta carta : mazoJ1) {
-                ventana.manoIzquierdaJ1.add(new VistaCarta(
-                        carta.getNombre(), carta.getTipo().toString(), carta.mostrarRareza(),
-                        carta.getAtkF(), carta.getDE(), carta.getAtkE(), carta.getDF(), "J1", carta.getSprite()
-                ));
-            }
-
-            for (Carta carta : mazoJ2) {
-                ventana.manoDerechaJ2.add(new VistaCarta(
-                        carta.getNombre(), carta.getTipo().toString(), carta.mostrarRareza(),
-                        carta.getAtkF(), carta.getDE(), carta.getAtkE(), carta.getDF(), "J2", carta.getSprite()
-                ));
-            }
-
-            ventana.revalidate();
-            ventana.repaint();
+            // 3. Hacemos la ventana visible ANTES de iniciarPartida
+            //    para que Swing construya todos los paneles físicamente
             ventana.setVisible(true);
+
+            // 4. Ahora sí arrancamos la partida:
+            //    actualizarManoVisual() leerá getMazoJ1/J2() del service (fuente única de verdad)
+            //    y el Timer de la IA encontrará los componentes ya renderizados
+            controlador.iniciarPartida(ventana);
         });
     }
 }

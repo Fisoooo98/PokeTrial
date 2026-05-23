@@ -9,6 +9,8 @@ import View.Combate.VentanaJuego;
 import View.MenuMazos.VentanaGestionMazo;
 import View.MenuSobres.VentanaTiendaSobres;
 
+import java.util.Random;
+
 public class MenuController {
     private Jugador jugador;
     private final JugadorDAOImpl jugadorDAO = new JugadorDAOImpl();
@@ -18,11 +20,15 @@ public class MenuController {
         this.jugador = jugadorDAO.obtenerJugadorPorId(idJugador);
     }
 
+    public void ElegirCombate(){
+
+    }
     public void abrirCombate(VentanaMenuPrincipal menu) {
         // Aquí instanciarías tu PartidaService y abrirías la arena
         // VentanaJuego arena = new VentanaJuego(new PartidaController(...));
+        Random rand = new Random();
         Combate c = new Combate();
-        c.iniciarPartida(getJugador().getId(),2);
+        c.iniciarPartida(getJugador().getId(),rand.nextInt(2,7));
     }
 
     public void abrirGestionMazos() {

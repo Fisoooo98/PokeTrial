@@ -22,7 +22,7 @@ public class Jugador {
     public Jugador(int id, String nombre,int  puntosBatalla) {
         this.id = id;
         this.nombre = nombre;
-        this.puntosBatalla = 500;
+        this.puntosBatalla = jugadorDAO.obtenerPuntosBatalla(id);
         this.mazo = new ArrayList<>();
         this.coleccion = new ArrayList<>();
     }

@@ -19,10 +19,10 @@ public class VentanaJuego extends JFrame {
     private JLabel lblContadorJ1, lblContadorJ2;
     private IndicadorTurnoPanel indicadorJ1, indicadorJ2;
 
-    public VentanaJuego() {
+    public VentanaJuego(Jugador j1, Jugador j2) {
         setTitle("⚡ Pokémon Triple Triad - Battle Arena ⚡");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1150, 900); // Subimos un poco el alto para los contadores de abajo
+        setSize(1150, 900);
         setLocationRelativeTo(null);
         getContentPane().setBackground(new Color(17, 24, 39));
         setLayout(new BorderLayout(25, 10));
@@ -36,7 +36,7 @@ public class VentanaJuego extends JFrame {
         JPanel bloqueJ1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         bloqueJ1.setOpaque(false);
         indicadorJ1 = new IndicadorTurnoPanel();
-        lblNombreJ1 = new JLabel("Jugador 1");
+        lblNombreJ1 = new JLabel(j1.getNombre());
         lblNombreJ1.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblNombreJ1.setForeground(new Color(59, 130, 246)); // Azul
         bloqueJ1.add(indicadorJ1);
@@ -45,12 +45,12 @@ public class VentanaJuego extends JFrame {
         // Bloque Jugador 2 (Derecha)
         JPanel bloqueJ2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bloqueJ2.setOpaque(false);
-        lblNombreJ2 = new JLabel("Jugador 2");
+        lblNombreJ2 = new JLabel(j2.getNombre());
         lblNombreJ2.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblNombreJ2.setForeground(new Color(239, 68, 68)); // Rojo
         indicadorJ2 = new IndicadorTurnoPanel();
         bloqueJ2.add(lblNombreJ2);
-        bloqueJ2.add(indicadorJ2); // Triángulo a la derecha del nombre de J2
+        bloqueJ2.add(indicadorJ2);
 
         panelSuperior.add(bloqueJ1);
         panelSuperior.add(bloqueJ2);
@@ -61,7 +61,7 @@ public class VentanaJuego extends JFrame {
         JPanel contenedorIzquierdo = new JPanel(new BorderLayout());
         contenedorIzquierdo.setOpaque(false);
         manoIzquierdaJ1 = crearPanelMano();
-        lblContadorJ1 = new JLabel("Casillas: 0", SwingConstants.CENTER);
+        lblContadorJ1 = new JLabel("Casillas Conquistadas: 0", SwingConstants.CENTER);
         lblContadorJ1.setFont(new Font("SansSerif", Font.BOLD, 16));
         lblContadorJ1.setForeground(Color.LIGHT_GRAY);
         lblContadorJ1.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
@@ -72,7 +72,7 @@ public class VentanaJuego extends JFrame {
         JPanel contenedorDerecho = new JPanel(new BorderLayout());
         contenedorDerecho.setOpaque(false);
         manoDerechaJ2 = crearPanelMano();
-        lblContadorJ2 = new JLabel("Casillas: 0", SwingConstants.CENTER);
+        lblContadorJ2 = new JLabel("Casillas Conquistadas: 0", SwingConstants.CENTER);
         lblContadorJ2.setFont(new Font("SansSerif", Font.BOLD, 16));
         lblContadorJ2.setForeground(Color.LIGHT_GRAY);
         lblContadorJ2.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
@@ -106,7 +106,7 @@ public class VentanaJuego extends JFrame {
     }
 
     /**
-     * 🔄 Método para configurar los nombres iniciales y encender el primer triángulo
+     * 🔄 Sincroniza nombres iniciales en el HUD superior y activa el primer triángulo de turno.
      */
     public void inicializarMarcadores(String nombreJ1, String nombreJ2, int turnoInicial) {
         lblNombreJ1.setText(nombreJ1);
@@ -115,7 +115,7 @@ public class VentanaJuego extends JFrame {
     }
 
     /**
-     * 🔄 Cambia visualmente cuál triángulo está activo
+     * 🔄 Modifica qué triángulo indicador de flujo está encendido.
      */
     public void actualizarTurnoVisual(int turnoActual) {
         indicadorJ1.setActivo(turnoActual == 1);
@@ -123,30 +123,48 @@ public class VentanaJuego extends JFrame {
     }
 
     /**
-     * 🔄 Actualiza los números del marcador de casillas
+     * 🔄 Actualiza numéricamente el marcador de control de casillas del pie.
      */
     public void actualizarContadoresCasillas(int scoreJ1, int scoreJ2) {
         lblContadorJ1.setText("Casillas Conquistadas: " + scoreJ1);
         lblContadorJ2.setText("Casillas Conquistadas: " + scoreJ2);
     }
 
-    // Métodos de sincronización de mano que ya teníamos
+    /**
+     * 🔄 Repuebla los paneles laterales leyendo los mazos en tiempo real desde el backend.
+     */
     public void actualizarManoVisual(String jugadorKey) {
         JPanel panelMano = jugadorKey.equals("J1") ? manoIzquierdaJ1 : manoDerechaJ2;
         panelMano.removeAll();
+
         java.util.List<Model.Entities.Carta> mazoLogico = jugadorKey.equals("J1")
                 ? controlador.getPartidaService().getMazoJ1()
                 : controlador.getPartidaService().getMazoJ2();
 
         if (mazoLogico != null) {
             for (Model.Entities.Carta carta : mazoLogico) {
-                panelMano.add(new VistaCarta(carta.getNombre(), carta.getTipo().toString(), carta.mostrarRareza(),
-                        carta.getAtkF(), carta.getDE(), carta.getAtkE(), carta.getDF(), jugadorKey, carta.getSprite()));
+                // ⚠️ IMPORTANTE: Verifica que los valores numéricos correspondan al orden exacto
+                // de los parámetros del constructor declarado en tu archivo VistaCarta.java
+                panelMano.add(new VistaCarta(
+                        carta.getNombre(),
+                        carta.getTipo().toString(),
+                        carta.mostrarRareza(),
+                        carta.getAtkF(), // Izquierda
+                        carta.getDE(),   // Abajo
+                        carta.getAtkE(), // Arriba
+                        carta.getDF(),   // Derecha
+                        jugadorKey,      // "J1" o "J2"
+                        carta.getSprite()
+                ));
             }
         }
-        panelMano.revalidate(); panelMano.repaint();
+        panelMano.revalidate();
+        panelMano.repaint();
     }
 
+    /**
+     * Devuelve la posición de índice que ocupa un componente de carta dentro de su panel de mano.
+     */
     public int obtenerIndiceManoActual(VistaCarta cartaVisual) {
         JPanel panelActivo = cartaVisual.getJugador().equals("J1") ? manoIzquierdaJ1 : manoDerechaJ2;
         Component[] componentes = panelActivo.getComponents();
@@ -155,44 +173,36 @@ public class VentanaJuego extends JFrame {
         }
         return -1;
     }
+
     /**
-     * Muestra un cartel gigante en el centro de la pantalla anunciando al ganador
-     * de la batalla de cartas.
-     * @param ganador El objeto Jugador que se llevó la victoria (puede ser null si es empate).
+     * Despliega un panel dorado central deteniendo la visualización del tablero al finalizar la partida.
      */
     public void mostrarCartelGanador(Jugador ganador) {
-        // 1. Creamos un panel contenedor que cubrirá el centro de la pantalla
         JPanel panelGanador = new JPanel();
         panelGanador.setLayout(new BoxLayout(panelGanador, BoxLayout.Y_AXIS));
-        panelGanador.setBackground(new Color(15, 23, 42, 235)); // Fondo gris oscuro semi-transparente (Slate 900)
-        panelGanador.setBorder(BorderFactory.createLineBorder(new Color(245, 158, 11), 4, true)); // Borde dorado
+        panelGanador.setBackground(new Color(15, 23, 42, 235));
+        panelGanador.setBorder(BorderFactory.createLineBorder(new Color(245, 158, 11), 4, true));
 
-        // 2. Definimos los textos decorativos del cartel
         JLabel lblTitulo = new JLabel("¡BATALLA TERMINADA!", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 28));
-        lblTitulo.setForeground(new Color(245, 158, 11)); // Dorado
+        lblTitulo.setForeground(new Color(245, 158, 11));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblResultado = new JLabel("", SwingConstants.CENTER);
-        lblResultado.setFont(new Font("SansSerif", Font.BOLD, 48)); // Letras gigantes
+        lblResultado.setFont(new Font("SansSerif", Font.BOLD, 48));
         lblResultado.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 3. Evaluamos si hubo un ganador o si terminó en tablas (empate)
         if (ganador == null) {
             lblResultado.setText("¡EMPATE TÉCNICO!");
             lblResultado.setForeground(Color.LIGHT_GRAY);
         } else {
-            // Averiguamos si el ganador es J1 o J2 comparando con los componentes de tu ventana
-            // O si preferís, podés comparar por ID: (ganador.getId() == 1)
             String tagJugador = (ganador.getNombre().equals(lblNombreJ1.getText())) ? "J1" : "J2";
-
             lblResultado.setText("HA GANADO " + tagJugador);
 
-            // Le asignamos el color de su facción para que quede más pro
             if (tagJugador.equals("J1")) {
-                lblResultado.setForeground(new Color(59, 130, 246)); // Azul J1
+                lblResultado.setForeground(new Color(59, 130, 246));
             } else {
-                lblResultado.setForeground(new Color(239, 68, 68)); // Rojo J2
+                lblResultado.setForeground(new Color(239, 68, 68));
             }
         }
 
@@ -201,7 +211,6 @@ public class VentanaJuego extends JFrame {
         lblNombre.setForeground(Color.WHITE);
         lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 4. Estructuramos el diseño del cartel con espaciadores rígidos
         panelGanador.add(Box.createVerticalStrut(25));
         panelGanador.add(lblTitulo);
         panelGanador.add(Box.createVerticalStrut(15));
@@ -212,14 +221,11 @@ public class VentanaJuego extends JFrame {
         }
         panelGanador.add(Box.createVerticalStrut(25));
 
-        // 5. Lo metemos en un contenedor absoluto intermedio para poder centrarlo sin importar el tamaño de ventana
         JPanel capaSuperpuesta = new JPanel(new GridBagLayout());
-        capaSuperpuesta.setOpaque(false); // Transparente para que se vea el tablero por detrás
-        panelGanador.setPreferredSize(new Dimension(550, 220)); // Tamaño fijo del cartel central
+        capaSuperpuesta.setOpaque(false);
+        panelGanador.setPreferredSize(new Dimension(550, 220));
         capaSuperpuesta.add(panelGanador);
 
-        // 6. Cambiamos el contenido central del BorderLayout de la ventana por este cartelazo
-        // Quitamos el tablero central viejo para congelar el juego visualmente
         BorderLayout layoutActual = (BorderLayout) getContentPane().getLayout();
         Component componenteCentralViejo = layoutActual.getLayoutComponent(BorderLayout.CENTER);
 
@@ -229,10 +235,11 @@ public class VentanaJuego extends JFrame {
 
         add(capaSuperpuesta, BorderLayout.CENTER);
 
-        // 7. Forzamos el redibujado de Swing en caliente
         revalidate();
         repaint();
     }
+
+    // --- GETTERS & SETTERS ESTRUCTURALES ---
     public void setControlador(PartidaController controlador) { this.controlador = controlador; }
     public PartidaController getControlador() { return controlador; }
     public JPanel getTablero3x3() { return tablero3x3; }

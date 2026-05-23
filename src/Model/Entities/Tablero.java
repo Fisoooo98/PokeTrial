@@ -47,6 +47,22 @@ public class Tablero {
         }
         return null; // O lanzar una excepción si se sale del tablero
     }
+    public Tablero clonar() {
+        Tablero copiaTablero = new Tablero();
+
+        for (int f = 0; f < FILAS; f++) {
+            for (int c = 0; c < COLUMNAS; c++) {
+                Casilla casillaOriginal = this.casillas[f][c];
+
+                if (casillaOriginal != null) {
+                    // Usamos el método clonar de Casilla para obtener una réplica exacta
+                    copiaTablero.setCasilla(casillaOriginal.clonar(), f, c);
+                }
+            }
+        }
+
+        return copiaTablero;
+    }
 
     public Casilla[][] getCasillas() {
         return casillas;

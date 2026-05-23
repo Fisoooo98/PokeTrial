@@ -205,4 +205,4 @@ public class VistaCarta extends JPanel {
     public String getJugador() {
         return jugador;
     }
-}
+    public void setJugador(String jugador) { this.jugador = jugador; }}
