@@ -75,32 +75,25 @@ public class VistaCarta extends JPanel {
         this.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
-
-                // 1. Buscamos de qué ventana es hija esta carta en este momento
                 Window ventanaAncestro = SwingUtilities.getWindowAncestor(VistaCarta.this);
 
-                // 2. ⚔️ CASO A: Si está en la pantalla de combate, ejecuta la lógica de selección antigua
                 if (ventanaAncestro instanceof View.Combate.VentanaJuego) {
                     View.Combate.VentanaJuego ventanaCombate = (View.Combate.VentanaJuego) ventanaAncestro;
 
-                    // Poné acá la lógica exacta que tenías en tu línea 64, por ejemplo:
-                    if (ventanaCombate.getControlador().getPartidaService().getJugadorActual().getId() == 1 && jugador.equals("J1") ||
-                            ventanaCombate.getControlador().getPartidaService().getJugadorActual().getId() == 2 && jugador.equals("J2")) {
+                    // 🔑 FIX: comparamos por turno ("J1"/"J2") directamente
+                    // sin depender del ID numérico del jugador en la BD
+                    int turnoActual = ventanaCombate.getControlador().getPartidaService().getTurnoActualNum();
+                    boolean esTurnoDeEstaCarta = (turnoActual == 1 && jugador.equals("J1"))
+                            || (turnoActual == 2 && jugador.equals("J2"));
 
-                        // Deseleccionamos la anterior
+                    if (esTurnoDeEstaCarta) {
                         if (ventanaCombate.getCartaSeleccionada() != null) {
                             ventanaCombate.getCartaSeleccionada().marcarSeleccionada(false);
                         }
-                        // Seleccionamos esta
                         marcarSeleccionada(true);
                         ventanaCombate.setCartaSeleccionada(VistaCarta.this);
                     }
-
-                }
-                // 🎴 CASO B: Si está en la ventana de gestión de mazo, ¡NO HACEMOS NADA ACÁ!
-                else if (ventanaAncestro instanceof View.MenuMazos.VentanaGestionMazo) {
-                    // Dejamos que los MouseListeners que le pusimos en 'VentanaGestionMazo'
-                    // (los que llaman al controlador para agregar/remover) manejen el flujo.
+                } else if (ventanaAncestro instanceof View.MenuMazos.VentanaGestionMazo) {
                     System.out.println("Clic en carta dentro del Gestor de Mazos. Lógica delegada a la ventana.");
                 }
             }

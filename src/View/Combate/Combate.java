@@ -15,12 +15,13 @@ public class Combate {
     }
 
     public void iniciarPartida(int idJugador1, int idJugador2) {
-        SwingUtilities.invokeLater(() -> {
-
+        // Si ya estamos en el EDT (llamada desde un ActionListener), ejecutamos
+        // directamente sin anidar otro invokeLater, lo que evita conflictos de
+        // foco y eventos de ratón con la ventana que nos llamó.
+        Runnable tarea = () -> {
             Model.Entities.Jugador j1 = jugadorDAO.obtenerJugadorPorId(idJugador1);
             Model.Entities.Jugador j2 = jugadorDAO.obtenerJugadorPorId(idJugador2);
 
-            // 1. Inicializamos el service (carga mazos y tablero lógico)
             PartidaService partidaService = new PartidaService();
             try {
                 partidaService.iniciarPartida(j1, j2);
@@ -29,19 +30,17 @@ public class Combate {
                 return;
             }
 
-            // 2. Creamos controlador y ventana
             Controller.PartidaController controlador = new Controller.PartidaController(partidaService);
             VentanaJuego ventana = new VentanaJuego(j1, j2);
             ventana.setControlador(controlador);
-
-            // 3. Hacemos la ventana visible ANTES de iniciarPartida
-            //    para que Swing construya todos los paneles físicamente
             ventana.setVisible(true);
-
-            // 4. Ahora sí arrancamos la partida:
-            //    actualizarManoVisual() leerá getMazoJ1/J2() del service (fuente única de verdad)
-            //    y el Timer de la IA encontrará los componentes ya renderizados
             controlador.iniciarPartida(ventana);
-        });
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            tarea.run(); // Ya estamos en el EDT, ejecutamos directo
+        } else {
+            SwingUtilities.invokeLater(tarea); // Venimos de otro hilo, lo encolamos
+        }
     }
 }

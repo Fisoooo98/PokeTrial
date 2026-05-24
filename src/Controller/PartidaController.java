@@ -378,7 +378,7 @@ public class PartidaController {
             if (casillaLogica == null || casillaLogica.getCarta() == null) continue;
 
             Jugador dueñoLogico = casillaLogica.getPropietario();
-            String tagDueñoBackend = (dueñoLogico.getId() == 1) ? "J1" : "J2";
+            String tagDueñoBackend = dueñoLogico.getId() == partidaService.getJugador1().getId() ? "J1" : "J2";
 
             if (casillaVisual.getComponentCount() == 0) continue;
 
