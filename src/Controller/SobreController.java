@@ -20,22 +20,15 @@ public class SobreController {
         this.tiendaService = new TiendaService();
     }
 
-    /**
-     * Intenta realizar la compra y apertura de un sobre consumiendo la lógica del backend.
-     * @param ventana Referencia de la vista para poder lanzar los modales de aviso.
-     * @param sobreElegido El enumerado oficial TipoSobre (BRONCE, PLATA, ORO).
-     * @return La lista de 5 cartas mejoradas si la compra fue exitosa, o null si falló.
-     */
-    public List<Carta> procesarCompraSobre(VentanaTiendaSobres ventana, TipoSobre sobreElegido) {
+    public List<Carta> procesarCompraSobre(VentanaTiendaSobres ventana, TipoSobre sobreElegido, int regionSeleccionada) {
         try {
-            // 🛒 Llamamos a tu función exacta del servicio
-            List<Carta> cartasGanadas = tiendaService.comprarSobre(jugador, sobreElegido);
+            // 🛒 ARREGLADO: Ahora le pasamos la regionSeleccionada a tu servicio
+            List<Carta> cartasGanadas = tiendaService.comprarSobre(jugador, sobreElegido, regionSeleccionada);
 
             System.out.println("💰 Compra exitosa. Puntos restantes de " + jugador.getNombre() + ": " + jugador.getPuntosBatalla());
             return cartasGanadas;
 
         } catch (MonedasInsuficientesException ex) {
-            // 🛑 Capturamos tu excepción personalizada y se la mostramos al usuario de forma pro
             JOptionPane.showMessageDialog(
                     ventana,
                     ex.getMessage() + "\n¡Ganá más batallas para acumular puntos!",
